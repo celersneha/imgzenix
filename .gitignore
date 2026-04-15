@@ -1,0 +1,105 @@
+# =========================
+# 📦 NODE MODULES
+# =========================
+node_modules/
+**/node_modules/
+
+# =========================
+# 🔐 ENV FILES (VERY IMPORTANT)
+# =========================
+.env
+.env.*
+!.env.example
+
+# =========================
+# 🏗️ BUILD OUTPUTS
+# =========================
+dist/
+build/
+**/dist/
+**/build/
+
+# =========================
+# ⚡ VITE / FRONTEND CACHE
+# =========================
+.vite/
+.cache/
+.parcel-cache/
+
+# =========================
+# 🧪 LOG FILES
+# =========================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# =========================
+# 📊 COVERAGE
+# =========================
+coverage/
+
+# =========================
+# 🧠 TYPESCRIPT
+# =========================
+*.tsbuildinfo
+
+# =========================
+# 🗂️ UPLOADS (if local storage used)
+# =========================
+uploads/
+**/uploads/
+
+# =========================
+# 🖥️ OS FILES
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# 🛠️ EDITOR SETTINGS
+# =========================
+.vscode/
+.idea/
+
+# =========================
+# 🗃️ TEMP FILES
+# =========================
+tmp/
+temp/s
+*.local
+
+# =========================
+# 🧩 MISC
+# =========================
+*.swp
+*.swo
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+AGENTS.md
