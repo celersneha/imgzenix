@@ -1,6 +1,18 @@
 import mongoose, { Schema } from "mongoose";
 
-const imageSchema = new Schema(
+export interface ImageDocument {
+  name: string;
+  url: string;
+  publicId: string;
+  size: number;
+  format: string;
+  folderId: mongoose.Types.ObjectId;
+  userId: mongoose.Types.ObjectId;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const imageSchema = new Schema<ImageDocument>(
   {
     name: {
       type: String,
@@ -49,4 +61,5 @@ const imageSchema = new Schema(
 imageSchema.index({ folderId: 1, userId: 1 });
 
 export const Image =
-  mongoose.models.Image || mongoose.model("Image", imageSchema);
+  (mongoose.models.Image as mongoose.Model<ImageDocument>) ||
+  mongoose.model<ImageDocument>("Image", imageSchema);
