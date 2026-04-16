@@ -32,3 +32,60 @@ export interface AuthTokens {
 export interface LoginData extends AuthTokens {
   user: User;
 }
+
+// Folder types
+export interface Folder {
+  _id: string;
+  name: string;
+  userId: string;
+  parentId: string | null;
+  totalSize: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BreadcrumbFolder {
+  _id: string;
+  name: string;
+}
+
+export interface CreateFolderRequest {
+  name: string;
+  parentId?: string | null;
+}
+
+// Image types
+export interface Image {
+  _id: string;
+  name: string;
+  url: string;
+  publicId: string;
+  size: number;
+  format: string;
+  folderId: string;
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Folder content response (GET /api/folder/:id/content)
+export interface FolderContent {
+  folders: Folder[];
+  images: Image[];
+  currentFolder: Folder | null;
+}
+
+// Pagination support
+export interface PaginatedFolders {
+  folders: Folder[];
+  page: number;
+  limit: number;
+  total: number;
+}
+
+export interface DeleteFolderResult {
+  deletedFolders: number;
+  deletedImages: number;
+  freedSize: number;
+  failedCloudinaryDeletes: number;
+}
