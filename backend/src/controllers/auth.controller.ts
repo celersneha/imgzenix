@@ -14,8 +14,8 @@ import handleRefreshToken from "../utils/refresh-token.js";
 
 export const authCookieOptions = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "strict" as const,
+  secure: true,
+  sameSite: "none" as const,
 };
 
 // for generating access and refresh token
