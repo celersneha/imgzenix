@@ -10,10 +10,11 @@ const apiBaseUrl =
   process.env.MCP_API_BASE_URL?.trim() || "http://localhost:8000/api/v1";
 
 const getAuthHeader = (): string => {
-  const token = process.env.MCP_JWT_TOKEN?.trim();
+  const token =
+    process.env.MCP_API_KEY?.trim() || process.env.MCP_JWT_TOKEN?.trim();
 
   if (!token) {
-    throw new Error("MCP_JWT_TOKEN is required");
+    throw new Error("MCP_API_KEY is required");
   }
 
   return `Bearer ${token}`;

@@ -6,6 +6,8 @@ import authRoutes from "./routes/auth.route.js";
 import userRoutes from "./routes/user.route.js";
 import folderRoutes from "./routes/folder.route.js";
 import imageRoutes from "./routes/image.route.js";
+import apiKeyRoutes from "./routes/api-key.route.js";
+import { registerHostedMcpRoutes } from "./mcp/hosted-mcp.js";
 
 const app = express();
 const corsOrigin = process.env.CORS_ORIGIN ?? "http://localhost:5173";
@@ -20,7 +22,13 @@ app.use(
     origin: allowedOrigins,
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-API-Key",
+      "MCP-Session-Id",
+      "Last-Event-ID",
+    ],
     optionsSuccessStatus: 200,
   }),
 );
@@ -34,6 +42,8 @@ app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/folder", folderRoutes);
 app.use("/api/v1/image", imageRoutes);
+app.use("/api/v1/api-keys", apiKeyRoutes);
+registerHostedMcpRoutes(app);
 
 app.use(
   (

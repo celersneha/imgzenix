@@ -5,6 +5,7 @@ import { ApiError } from "../utils/api-error.js";
 import {
   deleteFromCloudinary,
   uploadOnCloudinary,
+  uploadRemoteToCloudinary,
 } from "../utils/cloudinary.js";
 import { validateObjectId } from "../utils/folder.utils.js";
 import { updateFolderSizes } from "./folder.service.js";
@@ -49,6 +50,41 @@ const uploadImageService = async ({
 
   const uploadedImage = await Image.create({
     name: originalName,
+    url: uploadResult.secure_url,
+    publicId: uploadResult.public_id,
+    size: uploadResult.bytes,
+    format: uploadResult.format,
+    folderId: parsedFolderId,
+    userId,
+  });
+
+  await updateFolderSizes(userId, parsedFolderId, uploadedImage.size);
+
+  return uploadedImage;
+};
+
+const uploadImageFromUrlService = async ({
+  userId,
+  folderId,
+  imageUrl,
+  imageName,
+}: {
+  userId: string;
+  folderId: string;
+  imageUrl: string;
+  imageName?: string;
+}) => {
+  const parsedFolderId = await ensureFolderOwnership(userId, folderId);
+
+  const uploadResult = await uploadRemoteToCloudinary(imageUrl);
+  if (!uploadResult) {
+    throw new ApiError(500, "Failed to upload image from URL");
+  }
+
+  const fallbackName = uploadResult.original_filename || "uploaded-image";
+
+  const uploadedImage = await Image.create({
+    name: imageName?.trim() || fallbackName,
     url: uploadResult.secure_url,
     publicId: uploadResult.public_id,
     size: uploadResult.bytes,
@@ -194,5 +230,6 @@ export {
   deleteImageService,
   getImagesByFolderService,
   resolveImageByNameService,
+  uploadImageFromUrlService,
   uploadImageService,
 };

@@ -89,3 +89,20 @@ export interface DeleteFolderResult {
   freedSize: number;
   failedCloudinaryDeletes: number;
 }
+
+export interface ApiKeyRecord {
+  _id: string;
+  name: string;
+  keyPrefix: string;
+  scopes: string[];
+  lastUsedAt: string | null;
+  expiresAt: string | null;
+  revokedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateApiKeyResponse {
+  apiKey: string;
+  metadata: ApiKeyRecord;
+}

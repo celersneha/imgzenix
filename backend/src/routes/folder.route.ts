@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { verifyJWT } from "../middleware/auth.middleware.js";
+import { verifyUserAuth } from "../middleware/user-auth.middleware.js";
 import {
   createFolder,
   deleteFolder,
@@ -12,7 +12,7 @@ import {
 
 const router = Router();
 
-router.use(verifyJWT);
+router.use(verifyUserAuth);
 
 router.route("/").post(createFolder).get(getFolders);
 router.route("/resolve/by-name").get(resolveFolderByName);

@@ -1,9 +1,9 @@
 import { Router } from "express";
 import { getCurrentUser } from "../controllers/user.controller.js";
-import { verifyJWT } from "../middleware/auth.middleware.js";
+import { verifyUserAuth } from "../middleware/user-auth.middleware.js";
 
 const router = Router();
 
-router.route("/get-current-user").get(verifyJWT, getCurrentUser);
+router.route("/get-current-user").get(verifyUserAuth, getCurrentUser);
 
 export default router;

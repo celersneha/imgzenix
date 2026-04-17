@@ -28,6 +28,19 @@ const uploadOnCloudinary = async (localFilePath: string) => {
   }
 };
 
+const uploadRemoteToCloudinary = async (remoteUrl: string) => {
+  try {
+    if (!remoteUrl?.trim()) return null;
+
+    return await cloudinary.uploader.upload(remoteUrl.trim(), {
+      resource_type: "auto",
+    });
+  } catch (error) {
+    console.log("Remote upload error:", error);
+    return null;
+  }
+};
+
 // Helper function to extract public_id from Cloudinary URL
 const getPublicIdFromUrl = (url: string) => {
   // Assuming URL is like: https://res.cloudinary.com/<cloud_name>/image/upload/v<version>/<public_id>.<file_extension>
@@ -61,4 +74,4 @@ const deleteFromCloudinary = async (publicIdOrUrl: string) => {
   }
 };
 
-export { uploadOnCloudinary, deleteFromCloudinary };
+export { uploadOnCloudinary, uploadRemoteToCloudinary, deleteFromCloudinary };

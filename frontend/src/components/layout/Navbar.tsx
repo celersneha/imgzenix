@@ -41,14 +41,24 @@ export function Navbar() {
             Home
           </NavLink>
           {isAuthenticated ? (
-            <NavLink
-              to="/dashboard"
-              className={({ isActive }) =>
-                `nav-link ${isActive ? "nav-link-active" : ""}`
-              }
-            >
-              Dashboard
-            </NavLink>
+            <>
+              <NavLink
+                to="/dashboard"
+                className={({ isActive }) =>
+                  `nav-link ${isActive ? "nav-link-active" : ""}`
+                }
+              >
+                Dashboard
+              </NavLink>
+              <NavLink
+                to="/api-keys"
+                className={({ isActive }) =>
+                  `nav-link ${isActive ? "nav-link-active" : ""}`
+                }
+              >
+                API Keys
+              </NavLink>
+            </>
           ) : null}
         </div>
 

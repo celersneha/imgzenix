@@ -6,12 +6,12 @@ import {
   resolveImageByName,
   uploadImage,
 } from "../controllers/image.controller.js";
-import { verifyJWT } from "../middleware/auth.middleware.js";
+import { verifyUserAuth } from "../middleware/user-auth.middleware.js";
 import { upload } from "../middleware/multer.middleware.js";
 
 const router = Router();
 
-router.use(verifyJWT);
+router.use(verifyUserAuth);
 
 router.route("/upload").post(upload.single("file"), uploadImage);
 router.route("/resolve/by-name").get(resolveImageByName);
