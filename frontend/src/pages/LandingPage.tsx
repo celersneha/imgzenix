@@ -1,55 +1,55 @@
 import { Link } from "react-router";
 import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
+import { MCPLandingSection } from "@/components/landing-page/MCP";
 
 export default function LandingPage() {
   return (
-    <section className="space-y-12">
-      <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
-        <div className="space-y-6">
-          <p className="soft-badge">
-            Nested folders + image uploads + access control
-          </p>
-          <h1 className="text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
-            Organize campaigns with a clean, scalable folder workspace.
+    <>
+      <section className="space-y-10 pb-8">
+        <div className="mx-auto flex max-w-5xl flex-col items-center text-center">
+          <p className="soft-badge">ImgZenix</p>
+          <h1 className="mt-5 text-balance text-4xl font-semibold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+            A structured image workspace, designed for scale and control.
           </h1>
-          <p className="max-w-xl text-muted-foreground">
-            Dobby Ads helps each user create private folder trees, upload
-            assets, and track folder size including nested content at any depth.
+          <p className="mt-5 max-w-3xl text-lg text-muted-foreground">
+            From nested folders to AI-driven workflows via MCP - everything just
+            works.
           </p>
-          <div className="flex flex-wrap gap-3">
-            <Button asChild>
-              <Link to="/register">Start for free</Link>
+
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+            <Button asChild size="lg">
+              <Link to="/register">Get Started</Link>
             </Button>
-            <Button asChild variant="outline">
-              <Link to="/login">I already have an account</Link>
+            <Button asChild size="lg" variant="outline">
+              <a
+                href="https://github.com/celersneha"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                GitHub
+              </a>
             </Button>
           </div>
         </div>
 
-        <div className="feature-surface">
-          <div className="absolute -right-10 -top-10 size-32 rounded-full bg-brand-soft/80 blur-3xl" />
-          <div className="absolute -bottom-8 -left-8 size-24 rounded-full bg-accent/80 blur-3xl" />
-          <div className="relative space-y-4">
-            <h2 className="text-xl font-medium text-foreground">
-              Why this structure works
-            </h2>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li className="rounded-lg bg-background/70 px-3 py-2 transition-colors duration-200 hover:bg-background">
-                Each user can only access their own folders and images
-              </li>
-              <li className="rounded-lg bg-background/70 px-3 py-2 transition-colors duration-200 hover:bg-background">
-                Folder size aggregates recursively for nested folders
-              </li>
-              <li className="rounded-lg bg-background/70 px-3 py-2 transition-colors duration-200 hover:bg-background">
-                JWT auth flow with refresh token rotation
-              </li>
-              <li className="rounded-lg bg-background/70 px-3 py-2 transition-colors duration-200 hover:bg-background">
-                Modular frontend architecture using Redux + shadcn
-              </li>
-            </ul>
-          </div>
+        <div className="mx-auto max-w-6xl">
+          <motion.div
+            className="feature-surface overflow-hidden p-0"
+            initial={{ opacity: 0, y: 64 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.4 }}
+            transition={{ duration: 0.7, ease: "easeOut" }}
+          >
+            <img
+              src="/landing-page/hero-section.png"
+              alt="ImgZenix dashboard preview"
+              className="h-auto w-full object-cover"
+            />
+          </motion.div>
         </div>
-      </div>
-    </section>
+      </section>
+      <MCPLandingSection />
+    </>
   );
 }

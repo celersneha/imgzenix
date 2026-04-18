@@ -1,13 +1,10 @@
-# Dobby Ads - Image Drive
+# ImgZenix
 
 Image Drive is a full-stack app for managing folders and images with user-level isolation and MCP support.
 
-## Live URLs
+## Live URLs -
 
-- Frontend: https://image-drive-ruby.vercel.app
-- Backend: https://dobby-ads-xqkn.onrender.com/
-- Backend health route: https://dobby-ads-xqkn.onrender.com/
-- MCP health route: https://dobby-ads-xqkn.onrender.com/mcp/health
+imgzenix.vercel.app
 
 ## Important Functionality
 
@@ -28,9 +25,6 @@ Image Drive is a full-stack app for managing folders and images with user-level 
   - User can create API keys.
   - User can list and revoke API keys.
   - API keys are used for MCP authentication.
-- Hosted MCP endpoint:
-  - MCP runs from the same deployed backend.
-  - MCP route: `https://dobby-ads-xqkn.onrender.com/mcp`
 
 ## MCP Setup (Claude Desktop)
 
@@ -38,7 +32,7 @@ This project is currently connected in Claude Desktop using `mcp-remote` (stdio 
 
 ### 1. Create API Key
 
-1. Open frontend: https://image-drive-ruby.vercel.app
+1. Open app: https://imgzenix.vercel.app
 2. Login.
 3. Open API Keys page.
 4. Create a key and copy it once.
@@ -61,7 +55,7 @@ Use this server entry:
       "args": [
         "-y",
         "mcp-remote",
-        "https://dobby-ads-xqkn.onrender.com/mcp",
+        "https://imgzenix.onrender.com/mcp",
         "--transport",
         "http-only",
         "--header",

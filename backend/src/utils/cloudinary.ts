@@ -13,6 +13,7 @@ const uploadOnCloudinary = async (localFilePath: string) => {
     if (!localFilePath) return null;
     //upload file on cloudinary
     const response = await cloudinary.uploader.upload(localFilePath, {
+      folder: "imgzenix",
       resource_type: "auto",
     });
     //file has been uploaded successfully
@@ -33,6 +34,7 @@ const uploadRemoteToCloudinary = async (remoteUrl: string) => {
     if (!remoteUrl?.trim()) return null;
 
     return await cloudinary.uploader.upload(remoteUrl.trim(), {
+      folder: "imgzenix",
       resource_type: "auto",
     });
   } catch (error) {

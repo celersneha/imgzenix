@@ -19,16 +19,13 @@ export function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-20 border-b border-border/80 bg-background/85 backdrop-blur-md">
+    <header className="sticky top-0 z-20  backdrop-blur-md">
       <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link
           to="/"
           className="flex items-center gap-2 text-lg font-semibold text-foreground transition-transform duration-200 hover:-translate-y-0.5"
         >
-          <span className="grid size-8 place-items-center rounded-lg bg-primary text-primary-foreground shadow-sm">
-            D
-          </span>
-          Dobby Ads
+          ImgZenix
         </Link>
 
         <div className="hidden items-center gap-5 md:flex">
@@ -65,7 +62,7 @@ export function Navbar() {
         <div className="flex items-center gap-2">
           {isAuthenticated ? (
             <>
-              <p className="hidden text-sm text-muted-foreground sm:block">
+              <p className="hidden text-sm text-white sm:block">
                 Hi, {user?.Name}
               </p>
               <Button variant="outline" onClick={handleLogout}>

@@ -3,7 +3,7 @@ import type { ApiKeyDocument, ApiKeyScope } from "../models/api-key.model.js";
 import { API_KEY_SCOPES } from "../models/api-key.model.js";
 import { ApiError } from "./api-error.js";
 
-const API_KEY_PREFIX = "dobby_";
+const API_KEY_PREFIX = "imgzenix_";
 const API_KEY_SECRET_BYTES = 32;
 const DEFAULT_KEY_PREFIX_LENGTH = 12;
 

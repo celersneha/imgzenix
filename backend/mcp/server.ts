@@ -4,7 +4,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { registerAllTools } from "./registry.js";
 
 const server = new McpServer({
-  name: "dobby-ads-drive-mcp",
+  name: "imgzenix-drive-mcp",
   version: "1.0.0",
 });
 

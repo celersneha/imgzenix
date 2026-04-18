@@ -80,7 +80,7 @@ const buildUserScopedMcpServer = ({
   userId: string;
 }): McpServer => {
   const server = new McpServer({
-    name: "dobby-ads-hosted-mcp",
+    name: "imgzenix-hosted-mcp",
     version: "1.0.0",
   });
 
