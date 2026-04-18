@@ -25,11 +25,16 @@ const uploadImage = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Image file is required");
   }
 
+  // Accept custom image name from frontend
+  const customName =
+    typeof req.body.imageName === "string" ? req.body.imageName.trim() : "";
+
   const uploadedImage = await uploadImageService({
     userId: String(userId),
     folderId,
     localFilePath: filePath,
     originalName: req.file?.originalname ?? "uploaded-image",
+    imageName: customName,
   });
 
   return res

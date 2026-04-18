@@ -11,6 +11,7 @@ export function useImageUploadDialog(folderId: string | null) {
   const [open, setOpen] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [imageName, setImageName] = useState("");
 
   const handleUpload = async () => {
     if (!folderId) {
@@ -26,6 +27,9 @@ export function useImageUploadDialog(folderId: string | null) {
     try {
       const formData = new FormData();
       formData.append("file", file);
+      if (imageName.trim()) {
+        formData.append("imageName", imageName.trim());
+      }
 
       const uploadedImage = await dispatch(
         uploadImage({ formData, folderId }),
@@ -33,6 +37,7 @@ export function useImageUploadDialog(folderId: string | null) {
 
       dispatch(adjustCurrentFolderSize(uploadedImage.size));
       setFile(null);
+      setImageName("");
       setError(null);
       setOpen(false);
     } catch (uploadError) {
@@ -48,6 +53,7 @@ export function useImageUploadDialog(folderId: string | null) {
     setOpen(nextOpen);
     if (!nextOpen) {
       setFile(null);
+      setImageName("");
       setError(null);
     }
   };
@@ -63,6 +69,8 @@ export function useImageUploadDialog(folderId: string | null) {
     error,
     isUploading,
     setOpen,
+    imageName,
+    setImageName,
     handleUpload,
     handleOpenChange,
     handleFileChange,

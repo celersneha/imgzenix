@@ -23,6 +23,8 @@ export function ImageUploadDialog({ folderId }: ImageUploadDialogProps) {
     error,
     isUploading,
     setOpen,
+    imageName,
+    setImageName,
     handleUpload,
     handleOpenChange,
     handleFileChange,
@@ -68,6 +70,15 @@ export function ImageUploadDialog({ folderId }: ImageUploadDialogProps) {
               type="file"
             />
           </label>
+          <input
+            type="text"
+            className="w-full mt-2 rounded border border-border bg-surface px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            placeholder="Enter image name (optional)"
+            value={imageName}
+            onChange={(e) => setImageName(e.target.value)}
+            maxLength={100}
+            autoComplete="off"
+          />
           {error ? <p className="text-sm text-destructive">{error}</p> : null}
         </div>
 

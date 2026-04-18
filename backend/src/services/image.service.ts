@@ -35,13 +35,34 @@ const uploadImageService = async ({
   folderId,
   localFilePath,
   originalName,
+  imageName,
 }: {
   userId: string;
   folderId: string;
   localFilePath: string;
   originalName: string;
+  imageName?: string;
 }) => {
   const parsedFolderId = await ensureFolderOwnership(userId, folderId);
+
+  // Use custom name if provided, else fallback to originalName
+  let finalName =
+    imageName && imageName.trim() ? imageName.trim() : originalName;
+  // Prevent duplicate names in the same folder (case-insensitive)
+  const existing = await Image.findOne({
+    folderId: parsedFolderId,
+    userId,
+    name: {
+      $regex: `^${finalName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`,
+      $options: "i",
+    },
+  });
+  if (existing) {
+    throw new ApiError(
+      409,
+      "An image with this name already exists in this folder.",
+    );
+  }
 
   const uploadResult = await uploadOnCloudinary(localFilePath);
   if (!uploadResult) {
@@ -49,7 +70,7 @@ const uploadImageService = async ({
   }
 
   const uploadedImage = await Image.create({
-    name: originalName,
+    name: finalName,
     url: uploadResult.secure_url,
     publicId: uploadResult.public_id,
     size: uploadResult.bytes,
