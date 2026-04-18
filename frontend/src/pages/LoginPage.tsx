@@ -1,37 +1,13 @@
-import { Link, Navigate, useNavigate } from "react-router";
-import { AuthForm, type AuthFormValues } from "@/components/auth/AuthForm";
-import { useAppDispatch, useAppSelector } from "@/redux/hooks";
-import {
-  selectAuthError,
-  selectAuthLoading,
-  selectIsAuthenticated,
-} from "@/redux/selectors/authSelectors";
-import { clearAuthError, loginUser } from "@/redux/slices/authSlice";
+import { Link, Navigate } from "react-router";
+import { AuthForm } from "@/components/auth/AuthForm";
+import { useLoginForm } from "@/hooks/useLoginForm";
 
 export default function LoginPage() {
-  const navigate = useNavigate();
-  const dispatch = useAppDispatch();
-  const isAuthenticated = useAppSelector(selectIsAuthenticated);
-  const isLoading = useAppSelector(selectAuthLoading);
-  const error = useAppSelector(selectAuthError);
+  const { isAuthenticated, isLoading, error, handleSubmit } = useLoginForm();
 
   if (isAuthenticated) {
     return <Navigate to="/dashboard" replace />;
   }
-
-  const handleSubmit = async (values: AuthFormValues) => {
-    dispatch(clearAuthError());
-    const result = await dispatch(
-      loginUser({
-        email: values.email,
-        password: values.password,
-      }),
-    );
-
-    if (loginUser.fulfilled.match(result)) {
-      navigate("/dashboard");
-    }
-  };
 
   return (
     <section className="mx-auto max-w-md space-y-5">

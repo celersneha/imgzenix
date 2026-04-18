@@ -1,22 +1,9 @@
-import { Link, NavLink, useNavigate } from "react-router";
+import { Link, NavLink } from "react-router";
 import { Button } from "@/components/ui/button";
-import { useAppDispatch, useAppSelector } from "@/redux/hooks";
-import {
-  selectCurrentUser,
-  selectIsAuthenticated,
-} from "@/redux/selectors/authSelectors";
-import { logoutUser } from "@/redux/slices/authSlice";
+import { useNavbarAuth } from "@/hooks/useNavbarAuth";
 
 export function Navbar() {
-  const navigate = useNavigate();
-  const dispatch = useAppDispatch();
-  const user = useAppSelector(selectCurrentUser);
-  const isAuthenticated = useAppSelector(selectIsAuthenticated);
-
-  const handleLogout = async () => {
-    await dispatch(logoutUser());
-    navigate("/");
-  };
+  const { user, isAuthenticated, handleLogout } = useNavbarAuth();
 
   return (
     <header className="sticky top-0 z-20  backdrop-blur-md">

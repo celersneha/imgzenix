@@ -1,10 +1,6 @@
-import { useState } from "react";
 import { ImageUp, UploadCloud } from "lucide-react";
-import { useAppDispatch, useAppSelector } from "@/redux/hooks";
-import { adjustCurrentFolderSize } from "@/redux/slices/folderSlice";
-import { uploadImage } from "@/redux/slices/imageSlice";
-import { selectImageUploading } from "@/redux/selectors/imageSelectors";
 import { Button } from "@/components/ui/button";
+import { useImageUploadDialog } from "@/hooks/useImageUploadDialog";
 import {
   Dialog,
   DialogContent,
@@ -21,53 +17,19 @@ interface ImageUploadDialogProps {
 }
 
 export function ImageUploadDialog({ folderId }: ImageUploadDialogProps) {
-  const dispatch = useAppDispatch();
-  const isUploading = useAppSelector(selectImageUploading);
-  const [open, setOpen] = useState(false);
-  const [file, setFile] = useState<File | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  const handleUpload = async () => {
-    if (!folderId) {
-      setError("Open a folder before uploading an image.");
-      return;
-    }
-
-    if (!file) {
-      setError("Choose an image file to upload.");
-      return;
-    }
-
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const uploadedImage = await dispatch(
-        uploadImage({ formData, folderId }),
-      ).unwrap();
-
-      dispatch(adjustCurrentFolderSize(uploadedImage.size));
-      setFile(null);
-      setError(null);
-      setOpen(false);
-    } catch (uploadError) {
-      setError(
-        uploadError instanceof Error ? uploadError.message : String(uploadError),
-      );
-    }
-  };
+  const {
+    open,
+    file,
+    error,
+    isUploading,
+    setOpen,
+    handleUpload,
+    handleOpenChange,
+    handleFileChange,
+  } = useImageUploadDialog(folderId);
 
   return (
-    <Dialog
-      onOpenChange={(nextOpen) => {
-        setOpen(nextOpen);
-        if (!nextOpen) {
-          setFile(null);
-          setError(null);
-        }
-      }}
-      open={open}
-    >
+    <Dialog onOpenChange={handleOpenChange} open={open}>
       <DialogTrigger asChild>
         <Button disabled={!folderId} type="button">
           <ImageUp className="size-4" />
@@ -78,7 +40,8 @@ export function ImageUploadDialog({ folderId }: ImageUploadDialogProps) {
         <DialogHeader>
           <DialogTitle>Upload an image</DialogTitle>
           <DialogDescription>
-            Pick one file and it will be appended to the current folder without a refetch.
+            Pick one file and it will be appended to the current folder without
+            a refetch.
           </DialogDescription>
         </DialogHeader>
 
@@ -100,8 +63,7 @@ export function ImageUploadDialog({ folderId }: ImageUploadDialogProps) {
               className="hidden"
               onChange={(event) => {
                 const nextFile = event.target.files?.[0] ?? null;
-                setFile(nextFile);
-                setError(null);
+                handleFileChange(nextFile);
               }}
               type="file"
             />
@@ -113,7 +75,11 @@ export function ImageUploadDialog({ folderId }: ImageUploadDialogProps) {
           <Button onClick={() => setOpen(false)} type="button" variant="ghost">
             Cancel
           </Button>
-          <Button disabled={!folderId || isUploading} onClick={() => void handleUpload()} type="button">
+          <Button
+            disabled={!folderId || isUploading}
+            onClick={() => void handleUpload()}
+            type="button"
+          >
             {isUploading ? "Uploading..." : "Upload"}
           </Button>
         </DialogFooter>
