@@ -1,4 +1,10 @@
-import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
+import {
+  createCipheriv,
+  createDecipheriv,
+  createHash,
+  randomBytes,
+  timingSafeEqual,
+} from "node:crypto";
 import type { ApiKeyDocument, ApiKeyScope } from "../models/api-key.model.js";
 import { API_KEY_SCOPES } from "../models/api-key.model.js";
 import { ApiError } from "./api-error.js";
@@ -6,6 +12,27 @@ import { ApiError } from "./api-error.js";
 const API_KEY_PREFIX = "imgzenix_";
 const API_KEY_SECRET_BYTES = 32;
 const DEFAULT_KEY_PREFIX_LENGTH = 12;
+const AES_ALGORITHM = "aes-256-gcm";
+const AES_IV_BYTES = 12;
+
+const getApiKeyEncryptionSecret = (): string => {
+  const secret =
+    process.env.API_KEY_ENCRYPTION_SECRET?.trim() ||
+    process.env.API_KEY_PEPPER?.trim();
+
+  if (!secret) {
+    throw new ApiError(
+      500,
+      "API_KEY_ENCRYPTION_SECRET (or API_KEY_PEPPER fallback) is not configured",
+    );
+  }
+
+  return secret;
+};
+
+const getApiKeyEncryptionKey = (): Buffer => {
+  return createHash("sha256").update(getApiKeyEncryptionSecret()).digest();
+};
 
 const getApiKeyPepper = (): string => {
   const pepper = process.env.API_KEY_PEPPER?.trim();
@@ -35,6 +62,41 @@ export const verifyApiKeyHash = (
   }
 
   return timingSafeEqual(incomingBuffer, storedBuffer);
+};
+
+export const encryptApiKey = (rawApiKey: string): string => {
+  const iv = randomBytes(AES_IV_BYTES);
+  const cipher = createCipheriv(AES_ALGORITHM, getApiKeyEncryptionKey(), iv);
+  const encrypted = Buffer.concat([
+    cipher.update(rawApiKey, "utf8"),
+    cipher.final(),
+  ]);
+  const authTag = cipher.getAuthTag();
+
+  return `${iv.toString("hex")}:${authTag.toString("hex")}:${encrypted.toString("hex")}`;
+};
+
+export const decryptApiKey = (encryptedPayload: string): string => {
+  const parts = encryptedPayload.split(":");
+  if (parts.length !== 3) {
+    throw new ApiError(500, "Stored API key payload is invalid");
+  }
+
+  const [ivHex, authTagHex, dataHex] = parts as [string, string, string];
+  const iv = Buffer.from(ivHex, "hex");
+  const authTag = Buffer.from(authTagHex, "hex");
+  const encrypted = Buffer.from(dataHex, "hex");
+
+  const decipher = createDecipheriv(
+    AES_ALGORITHM,
+    getApiKeyEncryptionKey(),
+    iv,
+  );
+  decipher.setAuthTag(authTag);
+
+  return Buffer.concat([decipher.update(encrypted), decipher.final()]).toString(
+    "utf8",
+  );
 };
 
 export const createApiKeyMaterial = (): {

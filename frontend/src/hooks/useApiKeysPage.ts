@@ -11,6 +11,7 @@ import {
 import {
   clearApiKeyError,
   clearLatestApiKey,
+  copyApiKey,
   createApiKey,
   fetchApiKeys,
   revokeApiKey,
@@ -129,6 +130,22 @@ export function useApiKeysPage() {
     }
   };
 
+  const handleCopyKeyById = async (keyId: string) => {
+    const result = await dispatch(copyApiKey(keyId));
+
+    if (!copyApiKey.fulfilled.match(result)) {
+      toast.error(result.payload ?? "Failed to copy API key.");
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(result.payload.apiKey);
+      toast.success("API key copied to clipboard.");
+    } catch {
+      toast.error("Could not copy automatically. Please copy manually.");
+    }
+  };
+
   const hideLatestKey = () => {
     dispatch(clearLatestApiKey());
   };
@@ -161,6 +178,7 @@ export function useApiKeysPage() {
     handleRevokeConfirm,
     handleRevokeDialogChange,
     handleCopyLatestKey,
+    handleCopyKeyById,
     hideLatestKey,
     handleCreateDialogChange,
     revokeDialogOpen,

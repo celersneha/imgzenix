@@ -14,6 +14,7 @@ export interface ApiKeyDocument {
   name: string;
   keyPrefix: string;
   keyHash: string;
+  encryptedKey: string;
   scopes: ApiKeyScope[];
   lastUsedAt: Date | null;
   expiresAt: Date | null;
@@ -48,6 +49,11 @@ const apiKeySchema = new Schema<ApiKeyDocument>(
       required: true,
       unique: true,
       index: true,
+    },
+    encryptedKey: {
+      type: String,
+      required: true,
+      trim: true,
     },
     scopes: {
       type: [String],

@@ -4,6 +4,7 @@ import { ApiResponse } from "../utils/api-response.js";
 import {
   createApiKeyService,
   listApiKeysService,
+  revealApiKeyService,
   revokeApiKeyService,
 } from "../services/api-key.service.js";
 
@@ -65,4 +66,25 @@ const revokeApiKey = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, result, "API key revoked successfully"));
 });
 
-export { createApiKey, listApiKeys, revokeApiKey };
+const copyApiKey = asyncHandler(async (req, res) => {
+  const userId = req.user?._id;
+  if (!userId) {
+    throw new ApiError(401, "Unauthorized request");
+  }
+
+  const apiKeyId = String(req.params.id ?? "").trim();
+  if (!apiKeyId) {
+    throw new ApiError(400, "API key id is required");
+  }
+
+  const result = await revealApiKeyService({
+    userId: String(userId),
+    apiKeyId,
+  });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, result, "API key fetched successfully"));
+});
+
+export { copyApiKey, createApiKey, listApiKeys, revokeApiKey };

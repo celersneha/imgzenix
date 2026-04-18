@@ -4,6 +4,8 @@ import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/api-error.js";
 import {
   createApiKeyMaterial,
+  decryptApiKey,
+  encryptApiKey,
   normalizeApiKeyScopes,
   parseApiKeyExpiry,
   sanitizeApiKeyName,
@@ -32,6 +34,7 @@ const createApiKeyService = async ({
     scopes: normalizedScopes,
     keyPrefix,
     keyHash,
+    encryptedKey: encryptApiKey(rawApiKey),
     expiresAt: parsedExpiry,
     lastUsedAt: null,
     revokedAt: null,
@@ -50,6 +53,48 @@ const createApiKeyService = async ({
       createdAt: created.createdAt,
       updatedAt: created.updatedAt,
     },
+  };
+};
+
+const revealApiKeyService = async ({
+  userId,
+  apiKeyId,
+}: {
+  userId: string;
+  apiKeyId: string;
+}) => {
+  if (!Types.ObjectId.isValid(apiKeyId)) {
+    throw new ApiError(400, "Invalid API key id");
+  }
+
+  const key = await ApiKey.findOne({
+    _id: apiKeyId,
+    userId,
+  })
+    .select("_id encryptedKey revokedAt expiresAt")
+    .lean();
+
+  if (!key) {
+    throw new ApiError(404, "API key not found");
+  }
+
+  if (key.revokedAt) {
+    throw new ApiError(400, "Cannot copy a revoked API key");
+  }
+
+  if (key.expiresAt && key.expiresAt.getTime() <= Date.now()) {
+    throw new ApiError(400, "Cannot copy an expired API key");
+  }
+
+  if (!key.encryptedKey?.trim()) {
+    throw new ApiError(
+      409,
+      "This API key cannot be retrieved. Create a new key.",
+    );
+  }
+
+  return {
+    apiKey: decryptApiKey(key.encryptedKey),
   };
 };
 
@@ -146,6 +191,7 @@ const resolveUserByApiKeyService = async ({
 export {
   createApiKeyService,
   listApiKeysService,
+  revealApiKeyService,
   resolveUserByApiKeyService,
   revokeApiKeyService,
 };

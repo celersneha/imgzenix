@@ -6,6 +6,7 @@ import {
   deleteImageService,
   getImagesByFolderService,
   resolveImageByNameService,
+  uploadImageFromUrlService,
   uploadImageService,
 } from "../services/image.service.js";
 
@@ -34,6 +35,37 @@ const uploadImage = asyncHandler(async (req, res) => {
     folderId,
     localFilePath: filePath,
     originalName: req.file?.originalname ?? "uploaded-image",
+    imageName: customName,
+  });
+
+  return res
+    .status(201)
+    .json(new ApiResponse(201, uploadedImage, "Image uploaded successfully"));
+});
+
+const uploadImageFromUrl = asyncHandler(async (req, res) => {
+  const userId = req.user?._id;
+  if (!userId) {
+    throw new ApiError(401, "Unauthorized Request");
+  }
+
+  const folderId = String(req.body.folderId ?? "").trim();
+  if (!folderId) {
+    throw new ApiError(400, "folderId is required");
+  }
+
+  const imageUrl = String(req.body.imageUrl ?? "").trim();
+  if (!imageUrl) {
+    throw new ApiError(400, "imageUrl is required");
+  }
+
+  const customName =
+    typeof req.body.imageName === "string" ? req.body.imageName.trim() : "";
+
+  const uploadedImage = await uploadImageFromUrlService({
+    userId: String(userId),
+    folderId,
+    imageUrl,
     imageName: customName,
   });
 
@@ -142,4 +174,5 @@ export {
   getImagesByFolder,
   resolveImageByName,
   uploadImage,
+  uploadImageFromUrl,
 };

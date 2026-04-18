@@ -106,3 +106,7 @@ export interface CreateApiKeyResponse {
   apiKey: string;
   metadata: ApiKeyRecord;
 }
+
+export interface CopyApiKeyResponse {
+  apiKey: string;
+}

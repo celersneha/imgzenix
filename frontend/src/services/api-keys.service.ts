@@ -2,6 +2,7 @@ import { apiRequest } from "./api-client";
 import type {
   ApiKeyRecord,
   ApiResponse,
+  CopyApiKeyResponse,
   CreateApiKeyResponse,
 } from "@/types/api";
 
@@ -12,6 +13,11 @@ export const apiKeysService = {
     apiRequest<ApiResponse<CreateApiKeyResponse>>("/api-keys", {
       method: "POST",
       body: JSON.stringify(payload),
+    }),
+
+  copy: (id: string) =>
+    apiRequest<ApiResponse<CopyApiKeyResponse>>(`/api-keys/${id}/copy`, {
+      method: "POST",
     }),
 
   revoke: (id: string) =>

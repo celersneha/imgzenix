@@ -36,6 +36,7 @@ export default function ApiKeysPage() {
     handleRevokeConfirm,
     handleRevokeDialogChange,
     handleCopyLatestKey,
+    handleCopyKeyById,
     hideLatestKey,
     handleCreateDialogChange,
     revokeDialogOpen,
@@ -189,14 +190,24 @@ export default function ApiKeysPage() {
                     Revoked
                   </div>
                 ) : (
-                  <Button
-                    onClick={() => handleRevokeRequest(item._id)}
-                    type="button"
-                    variant="destructive"
-                  >
-                    <Trash2 className="size-4" />
-                    Revoke
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      onClick={() => handleCopyKeyById(item._id)}
+                      type="button"
+                      variant="outline"
+                    >
+                      <Copy className="size-4" />
+                      Copy
+                    </Button>
+                    <Button
+                      onClick={() => handleRevokeRequest(item._id)}
+                      type="button"
+                      variant="destructive"
+                    >
+                      <Trash2 className="size-4" />
+                      Revoke
+                    </Button>
+                  </div>
                 )}
               </div>
             </article>

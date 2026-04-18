@@ -1,7 +1,11 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { apiKeysService } from "@/services/api-keys.service";
 import { HttpError } from "@/services/api-client";
-import type { ApiKeyRecord, CreateApiKeyResponse } from "@/types/api";
+import type {
+  ApiKeyRecord,
+  CopyApiKeyResponse,
+  CreateApiKeyResponse,
+} from "@/types/api";
 
 interface ApiKeyState {
   keys: ApiKeyRecord[];
@@ -65,6 +69,19 @@ export const revokeApiKey = createAsyncThunk<
   try {
     await apiKeysService.revoke(keyId);
     return keyId;
+  } catch (error) {
+    return rejectWithValue(getErrorMessage(error));
+  }
+});
+
+export const copyApiKey = createAsyncThunk<
+  CopyApiKeyResponse,
+  string,
+  { rejectValue: string }
+>("apiKey/copyApiKey", async (keyId, { rejectWithValue }) => {
+  try {
+    const response = await apiKeysService.copy(keyId);
+    return response.data;
   } catch (error) {
     return rejectWithValue(getErrorMessage(error));
   }
