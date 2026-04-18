@@ -6,6 +6,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   Dialog,
   DialogContent,
@@ -22,8 +23,8 @@ export default function ApiKeysPage() {
     keys,
     isLoading,
     isSubmitting,
-    error,
     latestKey,
+    maskedLatestKey,
     hasActiveKeys,
     newKeyName,
     expiryDays,
@@ -31,10 +32,13 @@ export default function ApiKeysPage() {
     setNewKeyName,
     setExpiryDays,
     handleCreate,
-    handleRevoke,
+    handleRevokeRequest,
+    handleRevokeConfirm,
+    handleRevokeDialogChange,
     handleCopyLatestKey,
     hideLatestKey,
     handleCreateDialogChange,
+    revokeDialogOpen,
   } = useApiKeysPage();
 
   return (
@@ -118,7 +122,7 @@ export default function ApiKeysPage() {
             New API key (shown once)
           </p>
           <p className="mt-2 break-all rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm text-foreground">
-            {latestKey}
+            {maskedLatestKey}
           </p>
           <div className="mt-3 flex gap-2">
             <Button
@@ -133,12 +137,6 @@ export default function ApiKeysPage() {
               Hide key
             </Button>
           </div>
-        </div>
-      ) : null}
-
-      {error ? (
-        <div className="rounded-2xl border border-destructive/25 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-          {error}
         </div>
       ) : null}
 
@@ -192,7 +190,7 @@ export default function ApiKeysPage() {
                   </div>
                 ) : (
                   <Button
-                    onClick={() => void handleRevoke(item._id)}
+                    onClick={() => handleRevokeRequest(item._id)}
                     type="button"
                     variant="destructive"
                   >
@@ -205,6 +203,16 @@ export default function ApiKeysPage() {
           ))}
         </div>
       )}
+      <ConfirmDialog
+        confirmLabel="Revoke key"
+        destructive
+        description="Revoke this API key? Existing Claude MCP sessions using it will stop working immediately."
+        loading={isSubmitting}
+        onConfirm={handleRevokeConfirm}
+        onOpenChange={handleRevokeDialogChange}
+        open={revokeDialogOpen}
+        title="Revoke API key"
+      />
     </section>
   );
 }

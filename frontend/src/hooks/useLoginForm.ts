@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router";
 import type { AuthFormValues } from "@/components/auth/AuthForm";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
@@ -7,6 +8,7 @@ import {
   selectIsAuthenticated,
 } from "@/redux/selectors/authSelectors";
 import { clearAuthError, loginUser } from "@/redux/slices/authSlice";
+import { toast } from "sonner";
 
 export function useLoginForm() {
   const navigate = useNavigate();
@@ -15,6 +17,12 @@ export function useLoginForm() {
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const isLoading = useAppSelector(selectAuthLoading);
   const error = useAppSelector(selectAuthError);
+
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+    }
+  }, [error]);
 
   const handleSubmit = async (values: AuthFormValues) => {
     dispatch(clearAuthError());
@@ -33,7 +41,6 @@ export function useLoginForm() {
   return {
     isAuthenticated,
     isLoading,
-    error,
     handleSubmit,
   };
 }

@@ -38,7 +38,7 @@ export const fetchApiKeys = createAsyncThunk<
 >("apiKey/fetchApiKeys", async (_, { rejectWithValue }) => {
   try {
     const response = await apiKeysService.list();
-    return response.data.data;
+    return response.data;
   } catch (error) {
     return rejectWithValue(getErrorMessage(error));
   }
@@ -51,7 +51,7 @@ export const createApiKey = createAsyncThunk<
 >("apiKey/createApiKey", async (payload, { rejectWithValue }) => {
   try {
     const response = await apiKeysService.create(payload);
-    return response.data.data;
+    return response.data;
   } catch (error) {
     return rejectWithValue(getErrorMessage(error));
   }

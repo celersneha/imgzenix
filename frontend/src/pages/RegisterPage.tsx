@@ -3,16 +3,11 @@ import { AuthForm } from "@/components/auth/AuthForm";
 import { useRegisterForm } from "@/hooks/useRegisterForm";
 
 export default function RegisterPage() {
-  const { isLoading, error, handleSubmit } = useRegisterForm();
+  const { isLoading, handleSubmit } = useRegisterForm();
 
   return (
     <section className="mx-auto max-w-md space-y-5">
-      <AuthForm
-        mode="register"
-        loading={isLoading}
-        error={error}
-        onSubmit={handleSubmit}
-      />
+      <AuthForm mode="register" loading={isLoading} onSubmit={handleSubmit} />
       <p className="text-center text-sm text-muted-foreground">
         Already registered?{" "}
         <Link to="/login" className="subtle-link">

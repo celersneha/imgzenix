@@ -15,6 +15,7 @@ import {
   fetchApiKeys,
   revokeApiKey,
 } from "@/redux/slices/apiKeySlice";
+import { toast } from "sonner";
 
 const toIsoInDays = (days: number): string => {
   const now = Date.now();
@@ -29,6 +30,14 @@ export const formatDate = (value: string | null): string => {
   return new Date(value).toLocaleString();
 };
 
+const maskApiKey = (value: string): string => {
+  if (value.length <= 8) {
+    return `${value.slice(0, 3)}***${value.slice(-2)}`;
+  }
+
+  return `${value.slice(0, 4)}${"*".repeat(Math.max(4, value.length - 6))}${value.slice(-2)}`;
+};
+
 export function useApiKeysPage() {
   const dispatch = useAppDispatch();
   const keys = useAppSelector(selectApiKeys);
@@ -41,17 +50,25 @@ export function useApiKeysPage() {
   const [newKeyName, setNewKeyName] = useState("");
   const [expiryDays, setExpiryDays] = useState<number>(90);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [revokeDialogOpen, setRevokeDialogOpen] = useState(false);
+  const [keyToRevoke, setKeyToRevoke] = useState<string | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
 
   useEffect(() => {
     void dispatch(fetchApiKeys());
   }, [dispatch]);
 
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+    }
+  }, [error]);
+
   const handleCreate = async () => {
     const trimmedName = newKeyName.trim();
 
     if (!trimmedName) {
-      setValidationError("API key name is required");
+      toast.error("API key name is required");
       return;
     }
 
@@ -67,21 +84,36 @@ export function useApiKeysPage() {
       setCreateDialogOpen(false);
       setNewKeyName("");
       setExpiryDays(90);
+      toast.success("API key created successfully.");
     } catch {
       // Redux handles stateful errors for this flow.
     }
   };
 
-  const handleRevoke = async (keyId: string) => {
-    const confirmed = window.confirm(
-      "Revoke this API key? Existing Claude/MCP sessions using it will stop working.",
-    );
+  const handleRevokeRequest = (keyId: string) => {
+    setKeyToRevoke(keyId);
+    setRevokeDialogOpen(true);
+  };
 
-    if (!confirmed) {
+  const handleRevokeConfirm = async () => {
+    if (!keyToRevoke) {
       return;
     }
 
-    await dispatch(revokeApiKey(keyId));
+    const result = await dispatch(revokeApiKey(keyToRevoke));
+    if (revokeApiKey.fulfilled.match(result)) {
+      toast.success("API key revoked.");
+    }
+
+    setKeyToRevoke(null);
+    setRevokeDialogOpen(false);
+  };
+
+  const handleRevokeDialogChange = (nextOpen: boolean) => {
+    setRevokeDialogOpen(nextOpen);
+    if (!nextOpen) {
+      setKeyToRevoke(null);
+    }
   };
 
   const handleCopyLatestKey = async () => {
@@ -91,9 +123,9 @@ export function useApiKeysPage() {
 
     try {
       await navigator.clipboard.writeText(latestKey);
-      window.alert("API key copied to clipboard");
+      toast.success("API key copied to clipboard.");
     } catch {
-      window.alert("Could not copy automatically. Please copy manually.");
+      toast.error("Could not copy automatically. Please copy manually.");
     }
   };
 
@@ -117,6 +149,7 @@ export function useApiKeysPage() {
     isSubmitting,
     error: validationError ?? error,
     latestKey,
+    maskedLatestKey: latestKey ? maskApiKey(latestKey) : null,
     hasActiveKeys,
     newKeyName,
     expiryDays,
@@ -124,9 +157,12 @@ export function useApiKeysPage() {
     setNewKeyName,
     setExpiryDays,
     handleCreate,
-    handleRevoke,
+    handleRevokeRequest,
+    handleRevokeConfirm,
+    handleRevokeDialogChange,
     handleCopyLatestKey,
     hideLatestKey,
     handleCreateDialogChange,
+    revokeDialogOpen,
   };
 }

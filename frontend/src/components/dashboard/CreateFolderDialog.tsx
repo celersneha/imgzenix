@@ -21,7 +21,6 @@ export function CreateFolderDialog({
   const {
     open,
     name,
-    error,
     isCreating,
     setName,
     setOpen,
@@ -65,7 +64,6 @@ export function CreateFolderDialog({
               value={name}
             />
           </label>
-          {error ? <p className="text-sm text-destructive">{error}</p> : null}
         </div>
 
         <DialogFooter>

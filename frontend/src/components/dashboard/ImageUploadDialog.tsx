@@ -20,7 +20,6 @@ export function ImageUploadDialog({ folderId }: ImageUploadDialogProps) {
   const {
     open,
     file,
-    error,
     isUploading,
     setOpen,
     imageName,
@@ -79,7 +78,6 @@ export function ImageUploadDialog({ folderId }: ImageUploadDialogProps) {
             maxLength={100}
             autoComplete="off"
           />
-          {error ? <p className="text-sm text-destructive">{error}</p> : null}
         </div>
 
         <DialogFooter>

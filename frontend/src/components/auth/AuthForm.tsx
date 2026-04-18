@@ -10,11 +10,10 @@ export interface AuthFormValues {
 interface AuthFormProps {
   mode: "login" | "register";
   loading: boolean;
-  error: string | null;
   onSubmit: (values: AuthFormValues) => Promise<void>;
 }
 
-export function AuthForm({ mode, loading, error, onSubmit }: AuthFormProps) {
+export function AuthForm({ mode, loading, onSubmit }: AuthFormProps) {
   const [values, setValues] = useState<AuthFormValues>({
     Name: "",
     email: "",
@@ -74,8 +73,6 @@ export function AuthForm({ mode, loading, error, onSubmit }: AuthFormProps) {
           placeholder="********"
         />
       </label>
-
-      {error ? <p className="text-sm text-destructive">{error}</p> : null}
 
       <Button type="submit" disabled={loading} className="w-full">
         {loading ? "Please wait..." : isRegister ? "Create account" : "Login"}

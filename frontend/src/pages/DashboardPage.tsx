@@ -1,5 +1,6 @@
 import { ChevronRight, FolderRoot, LoaderCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { CreateFolderDialog } from "@/components/dashboard/CreateFolderDialog";
 import { FolderGrid } from "@/components/dashboard/FolderGrid";
 import { ImageGrid } from "@/components/dashboard/ImageGrid";
@@ -14,21 +15,25 @@ export default function DashboardPage() {
     folders,
     currentFolder,
     breadcrumb,
-    folderError,
     deletingFolderId,
     images,
-    imageError,
     deletingImageId,
     selectedImage,
     previewOpen,
+    folderToDelete,
+    imageToDelete,
     isLoading,
     surfaceTitle,
     helperText,
     handleOpenFolder,
     handleGoToRoot,
     handleBreadcrumbClick,
-    handleDeleteFolder,
-    handleDeleteImage,
+    handleDeleteFolderRequest,
+    handleDeleteFolderConfirm,
+    handleDeleteFolderDialogChange,
+    handleDeleteImageRequest,
+    handleDeleteImageConfirm,
+    handleDeleteImageDialogChange,
     handlePreviewImage,
     handlePreviewChange,
   } = useDashboardWorkspace();
@@ -97,12 +102,6 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      {folderError || imageError ? (
-        <div className="rounded-2xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-          {folderError ?? imageError}
-        </div>
-      ) : null}
-
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-xl font-semibold text-foreground">
@@ -142,7 +141,7 @@ export default function DashboardPage() {
             <FolderGrid
               deletingFolderId={deletingFolderId}
               folders={folders}
-              onDeleteFolder={handleDeleteFolder}
+              onDeleteFolder={handleDeleteFolderRequest}
               onOpenFolder={handleOpenFolder}
             />
           </div>
@@ -164,7 +163,7 @@ export default function DashboardPage() {
               <ImageGrid
                 deletingImageId={deletingImageId}
                 images={images}
-                onDeleteImage={handleDeleteImage}
+                onDeleteImage={handleDeleteImageRequest}
                 onPreviewImage={handlePreviewImage}
               />
             ) : (
@@ -191,6 +190,36 @@ export default function DashboardPage() {
         image={selectedImage}
         onOpenChange={handlePreviewChange}
         open={previewOpen}
+      />
+
+      <ConfirmDialog
+        confirmLabel="Delete folder"
+        destructive
+        description={
+          folderToDelete
+            ? `Delete "${folderToDelete.name}" and all nested content?`
+            : "Delete this folder and all nested content?"
+        }
+        loading={deletingFolderId === folderToDelete?._id}
+        onConfirm={handleDeleteFolderConfirm}
+        onOpenChange={handleDeleteFolderDialogChange}
+        open={Boolean(folderToDelete)}
+        title="Delete folder"
+      />
+
+      <ConfirmDialog
+        confirmLabel="Delete image"
+        destructive
+        description={
+          imageToDelete
+            ? `Delete "${imageToDelete.name}"?`
+            : "Delete this image?"
+        }
+        loading={deletingImageId === imageToDelete?._id}
+        onConfirm={handleDeleteImageConfirm}
+        onOpenChange={handleDeleteImageDialogChange}
+        open={Boolean(imageToDelete)}
+        title="Delete image"
       />
     </section>
   );

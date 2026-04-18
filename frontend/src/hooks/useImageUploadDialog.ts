@@ -1,3 +1,4 @@
+import { toast } from "sonner";
 import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { selectImageUploading } from "@/redux/selectors/imageSelectors";
@@ -15,12 +16,12 @@ export function useImageUploadDialog(folderId: string | null) {
 
   const handleUpload = async () => {
     if (!folderId) {
-      setError("Open a folder before uploading an image.");
+      toast.error("Open a folder before uploading an image.");
       return;
     }
 
     if (!file) {
-      setError("Choose an image file to upload.");
+      toast.error("Choose an image file to upload.");
       return;
     }
 
@@ -40,12 +41,14 @@ export function useImageUploadDialog(folderId: string | null) {
       setImageName("");
       setError(null);
       setOpen(false);
+      toast.success("Image uploaded successfully.");
     } catch (uploadError) {
-      setError(
+      const message =
         uploadError instanceof Error
           ? uploadError.message
-          : String(uploadError),
-      );
+          : String(uploadError);
+      setError(message);
+      toast.error(message);
     }
   };
 

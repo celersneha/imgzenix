@@ -3,7 +3,7 @@ import { AuthForm } from "@/components/auth/AuthForm";
 import { useLoginForm } from "@/hooks/useLoginForm";
 
 export default function LoginPage() {
-  const { isAuthenticated, isLoading, error, handleSubmit } = useLoginForm();
+  const { isAuthenticated, isLoading, handleSubmit } = useLoginForm();
 
   if (isAuthenticated) {
     return <Navigate to="/dashboard" replace />;
@@ -11,12 +11,7 @@ export default function LoginPage() {
 
   return (
     <section className="mx-auto max-w-md space-y-5">
-      <AuthForm
-        mode="login"
-        loading={isLoading}
-        error={error}
-        onSubmit={handleSubmit}
-      />
+      <AuthForm mode="login" loading={isLoading} onSubmit={handleSubmit} />
       <p className="text-center text-sm text-muted-foreground">
         New here?{" "}
         <Link to="/register" className="subtle-link">
