@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import path from "node:path";
 import type { Express, Request, Response } from "express";
 import * as z from "zod/v4";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -20,6 +21,7 @@ import {
   getImagesByFolderService,
   resolveImageByNameService,
   uploadImageFromUrlService,
+  uploadImageService,
 } from "../services/image.service.js";
 
 type SessionEntry = {
@@ -258,6 +260,53 @@ const buildUserScopedMcpServer = ({
 
         return {
           content: [{ type: "text", text: JSON.stringify(images, null, 2) }],
+        };
+      } catch (error) {
+        return {
+          isError: true,
+          content: [
+            {
+              type: "text",
+              text: `Tool failed: ${error instanceof Error ? error.message : "Unexpected error"}`,
+            },
+          ],
+        };
+      }
+    },
+  );
+
+  server.registerTool(
+    "uploadImage",
+    {
+      description:
+        "Upload an image from a local file path into a target folder for the authenticated user",
+      inputSchema: {
+        localFilePath: z.string().min(1),
+        imageName: z.string().optional(),
+        folderId: z.string().optional(),
+        folderName: z.string().optional(),
+        parentId: z.string().optional(),
+      },
+    },
+    async ({ localFilePath, imageName, folderId, folderName, parentId }) => {
+      try {
+        const resolvedFolderId = await resolveFolderIdForUser({
+          userId,
+          folderId,
+          folderName,
+          parentId,
+        });
+
+        const image = await uploadImageService({
+          userId,
+          folderId: resolvedFolderId,
+          localFilePath,
+          originalName: path.basename(localFilePath),
+          imageName,
+        });
+
+        return {
+          content: [{ type: "text", text: JSON.stringify(image, null, 2) }],
         };
       } catch (error) {
         return {
