@@ -7,7 +7,7 @@ import userRoutes from "./routes/user.route.js";
 import folderRoutes from "./routes/folder.route.js";
 import imageRoutes from "./routes/image.route.js";
 import apiKeyRoutes from "./routes/api-key.route.js";
-import { registerHostedMcpRoutes } from "./mcp/hosted-mcp.js";
+import { registerHostedMcpRoutes } from "./mcp/hosted/routes.js";
 
 const app = express();
 const corsOrigin = process.env.CORS_ORIGIN ?? "http://localhost:5173";

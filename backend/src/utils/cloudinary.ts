@@ -8,6 +8,12 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+const DEFAULT_UPLOAD_TIMEOUT_MS = 45_000;
+const resolvedTimeoutMs = Number(process.env.CLOUDINARY_UPLOAD_TIMEOUT_MS);
+const cloudinaryUploadTimeoutMs = Number.isFinite(resolvedTimeoutMs)
+  ? resolvedTimeoutMs
+  : DEFAULT_UPLOAD_TIMEOUT_MS;
+
 const uploadOnCloudinary = async (localFilePath: string) => {
   try {
     if (!localFilePath) return null;
@@ -15,6 +21,7 @@ const uploadOnCloudinary = async (localFilePath: string) => {
     const response = await cloudinary.uploader.upload(localFilePath, {
       folder: "imgzenix",
       resource_type: "auto",
+      timeout: cloudinaryUploadTimeoutMs,
     });
     //file has been uploaded successfully
     // console.log("file is uploaded on cloudinary ", response.url);
@@ -36,6 +43,7 @@ const uploadRemoteToCloudinary = async (remoteUrl: string) => {
     return await cloudinary.uploader.upload(remoteUrl.trim(), {
       folder: "imgzenix",
       resource_type: "auto",
+      timeout: cloudinaryUploadTimeoutMs,
     });
   } catch (error) {
     console.log("Remote upload error:", error);
