@@ -11,6 +11,8 @@ import { registerHostedMcpRoutes } from "./mcp/hosted/routes.js";
 
 const app = express();
 const corsOrigin = process.env.CORS_ORIGIN ?? "http://localhost:5173";
+const defaultBodyLimit = process.env.REQUEST_BODY_LIMIT ?? "256kb";
+const mcpBodyLimit = process.env.MCP_BODY_LIMIT ?? "15mb";
 const allowedOrigins = corsOrigin
   .split(",")
   .map((origin) => origin.trim())
@@ -33,8 +35,10 @@ app.use(
   }),
 );
 app.use(cookieParser());
-app.use(express.json({ limit: "16kb" }));
-app.use(express.urlencoded({ extended: true, limit: "16kb" }));
+app.use("/mcp", express.json({ limit: mcpBodyLimit }));
+app.use("/mcp", express.urlencoded({ extended: true, limit: mcpBodyLimit }));
+app.use(express.json({ limit: defaultBodyLimit }));
+app.use(express.urlencoded({ extended: true, limit: defaultBodyLimit }));
 
 app.use(express.static("public"));
 //routes declaration

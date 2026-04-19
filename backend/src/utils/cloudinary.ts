@@ -51,6 +51,44 @@ const uploadRemoteToCloudinary = async (remoteUrl: string) => {
   }
 };
 
+const uploadBufferToCloudinary = async ({
+  fileBuffer,
+  fileName,
+  mimeType,
+}: {
+  fileBuffer: Buffer;
+  fileName?: string;
+  mimeType?: string;
+}) => {
+  try {
+    if (!fileBuffer || fileBuffer.length === 0) return null;
+
+    return await new Promise<any>((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          folder: "imgzenix",
+          resource_type: "auto",
+          timeout: cloudinaryUploadTimeoutMs,
+          filename_override: fileName?.trim() || undefined,
+        },
+        (error, result) => {
+          if (error) {
+            reject(error);
+            return;
+          }
+
+          resolve(result ?? null);
+        },
+      );
+
+      uploadStream.end(fileBuffer);
+    });
+  } catch (error) {
+    console.log("Buffer upload error:", error);
+    return null;
+  }
+};
+
 // Helper function to extract public_id from Cloudinary URL
 const getPublicIdFromUrl = (url: string) => {
   // Assuming URL is like: https://res.cloudinary.com/<cloud_name>/image/upload/v<version>/<public_id>.<file_extension>
@@ -84,4 +122,9 @@ const deleteFromCloudinary = async (publicIdOrUrl: string) => {
   }
 };
 
-export { uploadOnCloudinary, uploadRemoteToCloudinary, deleteFromCloudinary };
+export {
+  uploadOnCloudinary,
+  uploadRemoteToCloudinary,
+  uploadBufferToCloudinary,
+  deleteFromCloudinary,
+};

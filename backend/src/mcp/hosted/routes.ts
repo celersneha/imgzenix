@@ -48,7 +48,7 @@ export const registerHostedMcpRoutes = (app: Express) => {
 
   app.post("/mcp", async (req, res) => {
     try {
-      const { user, rawApiKey } = await getUserFromApiKey(req);
+      const { user } = await getUserFromApiKey(req);
       const userId = String(user._id);
 
       const sessionIdHeader = req.headers["mcp-session-id"];
@@ -78,7 +78,7 @@ export const registerHostedMcpRoutes = (app: Express) => {
         return;
       }
 
-      const server = buildUserScopedMcpServer({ userId, rawApiKey });
+      const server = buildUserScopedMcpServer({ userId });
       const transport = createSessionTransport({ userId, server });
 
       await server.connect(transport);

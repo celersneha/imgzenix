@@ -13,7 +13,4 @@
 export { buildUserScopedMcpServer } from "./tools/index.js";
 export { registerFolderTools } from "./tools/index.js";
 export { registerImageTools } from "./tools/index.js";
-export {
-  resolveFolderIdForUser,
-  uploadImageViaMultipartApi,
-} from "./tools/index.js";
+export { resolveFolderIdForUser } from "./tools/index.js";

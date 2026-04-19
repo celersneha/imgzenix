@@ -4,10 +4,8 @@ import { registerImageTools } from "./image.js";
 
 export const buildUserScopedMcpServer = ({
   userId,
-  rawApiKey,
 }: {
   userId: string;
-  rawApiKey: string;
 }): McpServer => {
   const server = new McpServer({
     name: "imgzenix-hosted-mcp",
@@ -18,14 +16,11 @@ export const buildUserScopedMcpServer = ({
   registerFolderTools(server, userId);
 
   // Register image tools
-  registerImageTools(server, userId, rawApiKey);
+  registerImageTools(server, userId);
 
   return server;
 };
 
 export { registerFolderTools } from "./folder.js";
 export { registerImageTools } from "./image.js";
-export {
-  resolveFolderIdForUser,
-  uploadImageViaMultipartApi,
-} from "./helpers.js";
+export { resolveFolderIdForUser } from "./helpers.js";

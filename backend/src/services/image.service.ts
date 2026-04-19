@@ -4,6 +4,7 @@ import { Image } from "../models/image.model.js";
 import { ApiError } from "../utils/api-error.js";
 import {
   deleteFromCloudinary,
+  uploadBufferToCloudinary,
   uploadOnCloudinary,
   uploadRemoteToCloudinary,
 } from "../utils/cloudinary.js";
@@ -106,6 +107,65 @@ const uploadImageFromUrlService = async ({
 
   const uploadedImage = await Image.create({
     name: imageName?.trim() || fallbackName,
+    url: uploadResult.secure_url,
+    publicId: uploadResult.public_id,
+    size: uploadResult.bytes,
+    format: uploadResult.format,
+    folderId: parsedFolderId,
+    userId,
+  });
+
+  await updateFolderSizes(userId, parsedFolderId, uploadedImage.size);
+
+  return uploadedImage;
+};
+
+const uploadImageBufferService = async ({
+  userId,
+  folderId,
+  fileBuffer,
+  originalName,
+  imageName,
+  mimeType,
+}: {
+  userId: string;
+  folderId: string;
+  fileBuffer: Buffer;
+  originalName: string;
+  imageName?: string;
+  mimeType?: string;
+}) => {
+  const parsedFolderId = await ensureFolderOwnership(userId, folderId);
+
+  const finalName = imageName?.trim() ? imageName.trim() : originalName;
+  const existing = await Image.findOne({
+    folderId: parsedFolderId,
+    userId,
+    name: {
+      $regex: `^${finalName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`,
+      $options: "i",
+    },
+  });
+
+  if (existing) {
+    throw new ApiError(
+      409,
+      "An image with this name already exists in this folder.",
+    );
+  }
+
+  const uploadResult = await uploadBufferToCloudinary({
+    fileBuffer,
+    fileName: originalName,
+    mimeType,
+  });
+
+  if (!uploadResult) {
+    throw new ApiError(500, "Failed to upload image");
+  }
+
+  const uploadedImage = await Image.create({
+    name: finalName,
     url: uploadResult.secure_url,
     publicId: uploadResult.public_id,
     size: uploadResult.bytes,
@@ -251,6 +311,7 @@ export {
   deleteImageService,
   getImagesByFolderService,
   resolveImageByNameService,
+  uploadImageBufferService,
   uploadImageFromUrlService,
   uploadImageService,
 };

@@ -1,4 +1,3 @@
-import fs from "node:fs";
 import * as z from "zod/v4";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import {
@@ -6,19 +5,41 @@ import {
   deleteImageService,
   getImagesByFolderService,
   resolveImageByNameService,
+  uploadImageBufferService,
   uploadImageFromUrlService,
 } from "../../../services/image.service.js";
 import { handleTool } from "../tool-helpers.js";
-import {
-  resolveFolderIdForUser,
-  uploadImageViaMultipartApi,
-} from "./helpers.js";
+import { resolveFolderIdForUser } from "./helpers.js";
 
-export const registerImageTools = (
-  server: McpServer,
-  userId: string,
-  rawApiKey: string,
-) => {
+const DEFAULT_MAX_IMAGE_BYTES = 10 * 1024 * 1024;
+const parsedMaxImageBytes = Number(process.env.MCP_IMAGE_MAX_BYTES);
+const maxImageBytes = Number.isFinite(parsedMaxImageBytes)
+  ? parsedMaxImageBytes
+  : DEFAULT_MAX_IMAGE_BYTES;
+
+const stripDataUrlPrefix = (value: string): string => {
+  const trimmedValue = value.trim();
+  const commaIndex = trimmedValue.indexOf(",");
+
+  if (trimmedValue.startsWith("data:") && commaIndex >= 0) {
+    return trimmedValue.slice(commaIndex + 1);
+  }
+
+  return trimmedValue;
+};
+
+const estimateDecodedSizeInBytes = (normalizedBase64: string): number => {
+  const withoutWhitespace = normalizedBase64.replace(/\s+/g, "");
+  const padding = withoutWhitespace.endsWith("==")
+    ? 2
+    : withoutWhitespace.endsWith("=")
+      ? 1
+      : 0;
+
+  return Math.floor((withoutWhitespace.length * 3) / 4) - padding;
+};
+
+export const registerImageTools = (server: McpServer, userId: string) => {
   server.registerTool(
     "listImages",
     {
@@ -49,21 +70,55 @@ export const registerImageTools = (
     "uploadImage",
     {
       description:
-        "Upload an image from a local file path into a target folder for the authenticated user",
+        "Upload an image from base64 content into a target folder for the authenticated user",
       inputSchema: {
-        localFilePath: z.string().min(1),
+        base64Data: z.string().min(1),
+        fileName: z.string().min(1),
+        mimeType: z.string().optional(),
         imageName: z.string().optional(),
         folderId: z.string().optional(),
         folderName: z.string().optional(),
         parentId: z.string().optional(),
       },
     },
-    async ({ localFilePath, imageName, folderId, folderName, parentId }) =>
+    async ({
+      base64Data,
+      fileName,
+      mimeType,
+      imageName,
+      folderId,
+      folderName,
+      parentId,
+    }) =>
       handleTool(async () => {
-        const normalizedLocalPath = localFilePath.trim();
-        if (!fs.existsSync(normalizedLocalPath)) {
+        const normalizedBase64 = stripDataUrlPrefix(base64Data);
+        const estimatedSize = estimateDecodedSizeInBytes(normalizedBase64);
+
+        if (estimatedSize <= 0) {
+          throw new Error("Invalid or empty base64Data payload");
+        }
+
+        if (estimatedSize > maxImageBytes) {
           throw new Error(
-            "Local file path is not accessible to the MCP server process. Provide a path accessible to the MCP server, or use uploadImageFromUrl with a public URL.",
+            `Image payload is too large. Max allowed is ${maxImageBytes} bytes.`,
+          );
+        }
+
+        let fileBuffer: Buffer;
+
+        try {
+          fileBuffer = Buffer.from(normalizedBase64, "base64");
+        } catch {
+          throw new Error("Invalid base64Data payload");
+        }
+
+        if (!fileBuffer.length) {
+          throw new Error("Decoded file buffer is empty");
+        }
+
+        if (fileBuffer.length > maxImageBytes) {
+          throw new Error(
+            `Decoded image is too large. Max allowed is ${maxImageBytes} bytes.`,
           );
         }
 
@@ -74,11 +129,13 @@ export const registerImageTools = (
           parentId,
         });
 
-        return uploadImageViaMultipartApi({
-          localFilePath: normalizedLocalPath,
+        return uploadImageBufferService({
+          userId,
           folderId: resolvedFolderId,
+          fileBuffer,
+          originalName: fileName.trim(),
+          mimeType,
           imageName,
-          rawApiKey,
         });
       }),
   );
