@@ -1,4 +1,5 @@
 import { ChevronRight, FolderRoot, LoaderCircle } from "lucide-react";
+import { Link } from "react-router";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { CreateFolderDialog } from "@/components/dashboard/CreateFolderDialog";
@@ -25,9 +26,6 @@ export default function DashboardPage() {
     isLoading,
     surfaceTitle,
     helperText,
-    handleOpenFolder,
-    handleGoToRoot,
-    handleBreadcrumbClick,
     handleDeleteFolderRequest,
     handleDeleteFolderConfirm,
     handleDeleteFolderDialogChange,
@@ -53,24 +51,26 @@ export default function DashboardPage() {
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-              <button
-                className="inline-flex items-center gap-2 rounded-full border border-border bg-background/70 px-3 py-1.5 transition-colors hover:bg-muted"
-                onClick={() => void handleGoToRoot()}
-                type="button"
+              <Button
+                asChild
+                className="rounded-full px-3 py-1.5"
+                variant="ghost"
               >
-                <FolderRoot className="size-4" />
-                Root
-              </button>
-              {breadcrumb.map((item, index) => (
+                <Link to="/dashboard">
+                  <FolderRoot className="size-4" />
+                  Root
+                </Link>
+              </Button>
+              {breadcrumb.map((item) => (
                 <div className="flex items-center gap-2" key={item._id}>
                   <ChevronRight className="size-4" />
-                  <button
-                    className="rounded-full px-3 py-1.5 transition-colors hover:bg-muted hover:text-foreground"
-                    onClick={() => void handleBreadcrumbClick(index)}
-                    type="button"
+                  <Button
+                    asChild
+                    className="rounded-full px-3 py-1.5"
+                    variant="ghost"
                   >
-                    {item.name}
-                  </button>
+                    <Link to={`/dashboard/${item._id}`}>{item.name}</Link>
+                  </Button>
                 </div>
               ))}
             </div>
@@ -129,12 +129,8 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-foreground">Folders</h3>
               {!currentFolder ? (
-                <Button
-                  onClick={() => void handleGoToRoot()}
-                  type="button"
-                  variant="ghost"
-                >
-                  Refresh Root
+                <Button asChild type="button" variant="ghost">
+                  <Link to="/dashboard">Refresh Root</Link>
                 </Button>
               ) : null}
             </div>
@@ -142,7 +138,6 @@ export default function DashboardPage() {
               deletingFolderId={deletingFolderId}
               folders={folders}
               onDeleteFolder={handleDeleteFolderRequest}
-              onOpenFolder={handleOpenFolder}
             />
           </div>
 

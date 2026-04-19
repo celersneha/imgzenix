@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useParams } from "react-router";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { selectCurrentUser } from "@/redux/selectors/authSelectors";
 import {
@@ -25,14 +26,12 @@ import {
 import { deleteImage, setSelectedImage } from "@/redux/slices/imageSlice";
 import type { BreadcrumbFolder, Folder, Image } from "@/types/api";
 import { toast } from "sonner";
-
-const makeBreadcrumbItem = (folder: Folder): BreadcrumbFolder => ({
-  _id: folder._id,
-  name: folder.name,
-});
+import { folderService } from "@/services/folder.service";
 
 export function useDashboardWorkspace() {
   const dispatch = useAppDispatch();
+  const params = useParams<{ folderId?: string }>();
+  const folderIdParam = params.folderId?.trim() || null;
   const user = useAppSelector(selectCurrentUser);
   const folders = useAppSelector(selectFolders);
   const currentFolder = useAppSelector(selectCurrentFolder);
@@ -49,38 +48,49 @@ export function useDashboardWorkspace() {
   const [folderToDelete, setFolderToDelete] = useState<Folder | null>(null);
   const [imageToDelete, setImageToDelete] = useState<Image | null>(null);
 
-  useEffect(() => {
-    void dispatch(fetchFolders());
-  }, [dispatch]);
+  const fetchBreadcrumbChain = async (
+    targetFolderId: string,
+  ): Promise<BreadcrumbFolder[]> => {
+    const chain: BreadcrumbFolder[] = [];
+    let nextFolderId: string | null = targetFolderId;
 
-  const handleOpenFolder = async (folder: Folder) => {
-    const nextBreadcrumb = [...breadcrumb, makeBreadcrumbItem(folder)];
-    await dispatch(
-      fetchFolderContent({
-        folderId: folder._id,
-        breadcrumb: nextBreadcrumb,
-      }),
-    );
-  };
+    while (nextFolderId) {
+      const response = await folderService.getFolderContent(nextFolderId);
+      const folder = response.data.data.currentFolder;
 
-  const handleGoToRoot = async () => {
-    await dispatch(fetchFolders());
-  };
+      if (!folder) {
+        break;
+      }
 
-  const handleBreadcrumbClick = async (index: number) => {
-    const targetFolder = breadcrumb[index];
+      chain.unshift({
+        _id: folder._id,
+        name: folder.name,
+      });
 
-    if (!targetFolder) {
-      return;
+      nextFolderId = folder.parentId;
     }
 
-    await dispatch(
-      fetchFolderContent({
-        folderId: targetFolder._id,
-        breadcrumb: breadcrumb.slice(0, index + 1),
-      }),
-    );
+    return chain;
   };
+
+  useEffect(() => {
+    const loadWorkspace = async () => {
+      if (!folderIdParam) {
+        await dispatch(fetchFolders());
+        return;
+      }
+
+      const breadcrumbChain = await fetchBreadcrumbChain(folderIdParam);
+      await dispatch(
+        fetchFolderContent({
+          folderId: folderIdParam,
+          breadcrumb: breadcrumbChain,
+        }),
+      );
+    };
+
+    void loadWorkspace();
+  }, [dispatch, folderIdParam]);
 
   const handleDeleteFolderRequest = (folder: Folder) => {
     setFolderToDelete(folder);
@@ -178,9 +188,6 @@ export function useDashboardWorkspace() {
     isLoading,
     surfaceTitle,
     helperText,
-    handleOpenFolder,
-    handleGoToRoot,
-    handleBreadcrumbClick,
     handleDeleteFolderRequest,
     handleDeleteFolderConfirm,
     handleDeleteFolderDialogChange,

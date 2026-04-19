@@ -1,4 +1,5 @@
 import { FolderOpen, MoreHorizontal, Trash2 } from "lucide-react";
+import { Link } from "react-router";
 import { Button } from "@/components/ui/button";
 import { formatBytes, formatDate } from "@/lib/format";
 import type { Folder } from "@/types/api";
@@ -6,14 +7,12 @@ import type { Folder } from "@/types/api";
 interface FolderCardProps {
   folder: Folder;
   isDeleting?: boolean;
-  onOpen: (folder: Folder) => void;
   onDelete: (folder: Folder) => void;
 }
 
 export function FolderCard({
   folder,
   isDeleting = false,
-  onOpen,
   onDelete,
 }: FolderCardProps) {
   return (
@@ -43,8 +42,8 @@ export function FolderCard({
       </div>
 
       <div className="mt-5 flex items-center gap-2">
-        <Button className="flex-1" onClick={() => onOpen(folder)} type="button">
-          Open
+        <Button asChild className="flex-1" type="button">
+          <Link to={`/dashboard/${folder._id}`}>Open</Link>
         </Button>
         <Button
           disabled={isDeleting}

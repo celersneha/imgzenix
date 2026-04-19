@@ -5,14 +5,12 @@ import { FolderCard } from "./FolderCard";
 interface FolderGridProps {
   folders: Folder[];
   deletingFolderId?: string | null;
-  onOpenFolder: (folder: Folder) => void;
   onDeleteFolder: (folder: Folder) => void;
 }
 
 export function FolderGrid({
   folders,
   deletingFolderId,
-  onOpenFolder,
   onDeleteFolder,
 }: FolderGridProps) {
   if (!folders.length) {
@@ -22,7 +20,9 @@ export function FolderGrid({
           <FolderSearch className="size-6" />
         </div>
         <div>
-          <h3 className="text-lg font-semibold text-foreground">No folders yet</h3>
+          <h3 className="text-lg font-semibold text-foreground">
+            No folders yet
+          </h3>
           <p className="text-sm text-muted-foreground">
             Create a folder to start organizing campaign assets and uploads.
           </p>
@@ -39,7 +39,6 @@ export function FolderGrid({
           isDeleting={deletingFolderId === folder._id}
           key={folder._id}
           onDelete={onDeleteFolder}
-          onOpen={onOpenFolder}
         />
       ))}
     </div>
