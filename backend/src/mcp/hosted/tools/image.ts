@@ -1,6 +1,7 @@
 import * as z from "zod/v4";
 import { basename } from "node:path";
 import { readFile, stat } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import {
   deleteImageByNameService,
@@ -18,6 +19,29 @@ const parsedMaxImageBytes = Number(process.env.MCP_IMAGE_MAX_BYTES);
 const maxImageBytes = Number.isFinite(parsedMaxImageBytes)
   ? parsedMaxImageBytes
   : DEFAULT_MAX_IMAGE_BYTES;
+
+const normalizeInputFilePath = (input: string): string => {
+  let normalizedPath = input.trim();
+
+  const hasMatchingDoubleQuotes =
+    normalizedPath.startsWith('"') && normalizedPath.endsWith('"');
+  const hasMatchingSingleQuotes =
+    normalizedPath.startsWith("'") && normalizedPath.endsWith("'");
+
+  if (hasMatchingDoubleQuotes || hasMatchingSingleQuotes) {
+    normalizedPath = normalizedPath.slice(1, -1).trim();
+  }
+
+  if (normalizedPath.toLowerCase().startsWith("file://")) {
+    try {
+      normalizedPath = fileURLToPath(normalizedPath);
+    } catch {
+      // Keep original path so stat can provide a more specific filesystem error.
+    }
+  }
+
+  return normalizedPath;
+};
 
 export const registerImageTools = (server: McpServer, userId: string) => {
   server.registerTool(
@@ -60,7 +84,7 @@ export const registerImageTools = (server: McpServer, userId: string) => {
     parentId?: string;
   }) =>
     handleTool(async () => {
-      const resolvedFilePath = filePath.trim();
+      const resolvedFilePath = normalizeInputFilePath(filePath);
 
       if (!resolvedFilePath) {
         throw new Error("filePath is required");
@@ -69,8 +93,11 @@ export const registerImageTools = (server: McpServer, userId: string) => {
       let fileStats;
       try {
         fileStats = await stat(resolvedFilePath);
-      } catch {
-        throw new Error("Unable to access filePath");
+      } catch (error) {
+        const reason = error instanceof Error ? error.message : String(error);
+        throw new Error(
+          `Unable to access filePath \"${resolvedFilePath}\": ${reason}`,
+        );
       }
 
       if (!fileStats.isFile()) {
