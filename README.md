@@ -94,6 +94,50 @@ Notes:
 
 Result: a user can access only their own folders/images through MCP.
 
+## MCP Setup (VS Code Copilot)
+
+This project is connected in VS Code using `mcp-remote` (stdio bridge) to the hosted MCP HTTP endpoint via the ImgZenix MCP server.
+
+### 1. Update VS Code MCP Configuration
+
+Config file location (Windows):
+
+`%APPDATA%\\Code\\User\\mcp.json`
+
+Add the `imgzenix-loc` server entry to your `mcp.json`:
+
+```jsonc
+"imgzenix-loc": {
+  "type": "stdio",
+  "command": "npx",
+  "args": [
+    "-y",
+    "mcp-remote",
+    "http://localhost:8000/mcp",
+    "--transport",
+    "http-only",
+    "--header",
+    "X-API-Key:YOUR_API_KEY_HERE"
+  ]
+}
+```
+
+Notes:
+
+- Replace `YOUR_API_KEY_HERE` with your actual ImgZenix API key.
+- Use `http://localhost:8000/mcp` for local development or the appropriate endpoint for production.
+- Restart VS Code after saving the configuration.
+
+### 2. Using ImgZenix Tools in VS Code Copilot
+
+Once configured, you can use ImgZenix MCP tools through VS Code Copilot Chat:
+
+- "List my folders"
+- "Create a folder named folder-name"
+- "Upload an image to folder-id"
+- "Delete a folder"
+- And more folder/image management operations
+
 ## Health Checks
 
 - App health: `GET https://dobby-ads-xqkn.onrender.com/`
