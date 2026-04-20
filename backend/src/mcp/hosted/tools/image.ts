@@ -1,4 +1,6 @@
 import * as z from "zod/v4";
+import { basename } from "node:path";
+import { readFile, stat } from "node:fs/promises";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import {
   deleteImageByNameService,
@@ -16,28 +18,6 @@ const parsedMaxImageBytes = Number(process.env.MCP_IMAGE_MAX_BYTES);
 const maxImageBytes = Number.isFinite(parsedMaxImageBytes)
   ? parsedMaxImageBytes
   : DEFAULT_MAX_IMAGE_BYTES;
-
-const stripDataUrlPrefix = (value: string): string => {
-  const trimmedValue = value.trim();
-  const commaIndex = trimmedValue.indexOf(",");
-
-  if (trimmedValue.startsWith("data:") && commaIndex >= 0) {
-    return trimmedValue.slice(commaIndex + 1);
-  }
-
-  return trimmedValue;
-};
-
-const estimateDecodedSizeInBytes = (normalizedBase64: string): number => {
-  const withoutWhitespace = normalizedBase64.replace(/\s+/g, "");
-  const padding = withoutWhitespace.endsWith("==")
-    ? 2
-    : withoutWhitespace.endsWith("=")
-      ? 1
-      : 0;
-
-  return Math.floor((withoutWhitespace.length * 3) / 4) - padding;
-};
 
 export const registerImageTools = (server: McpServer, userId: string) => {
   server.registerTool(
@@ -66,78 +46,99 @@ export const registerImageTools = (server: McpServer, userId: string) => {
       }),
   );
 
+  const uploadImageFromPath = async ({
+    filePath,
+    imageName,
+    folderId,
+    folderName,
+    parentId,
+  }: {
+    filePath: string;
+    imageName?: string;
+    folderId?: string;
+    folderName?: string;
+    parentId?: string;
+  }) =>
+    handleTool(async () => {
+      const resolvedFilePath = filePath.trim();
+
+      if (!resolvedFilePath) {
+        throw new Error("filePath is required");
+      }
+
+      let fileStats;
+      try {
+        fileStats = await stat(resolvedFilePath);
+      } catch {
+        throw new Error("Unable to access filePath");
+      }
+
+      if (!fileStats.isFile()) {
+        throw new Error("filePath must point to a file");
+      }
+
+      if (fileStats.size <= 0) {
+        throw new Error("File is empty");
+      }
+
+      if (fileStats.size > maxImageBytes) {
+        throw new Error(
+          `Image file is too large. Max allowed is ${maxImageBytes} bytes.`,
+        );
+      }
+
+      const fileBuffer = await readFile(resolvedFilePath);
+
+      if (!fileBuffer.length) {
+        throw new Error("File buffer is empty");
+      }
+
+      const resolvedFolderId = await resolveFolderIdForUser({
+        userId,
+        folderId,
+        folderName,
+        parentId,
+      });
+
+      return uploadImageBufferService({
+        userId,
+        folderId: resolvedFolderId,
+        fileBuffer,
+        originalName: basename(resolvedFilePath),
+        imageName,
+      });
+    });
+
   server.registerTool(
     "uploadImage",
     {
       description:
-        "Upload an image from base64 content into a target folder for the authenticated user",
+        "Upload an image from a local file path into a target folder for the authenticated user",
       inputSchema: {
-        base64Data: z.string().min(1),
-        fileName: z.string().min(1),
-        mimeType: z.string().optional(),
+        filePath: z.string().min(1),
         imageName: z.string().optional(),
         folderId: z.string().optional(),
         folderName: z.string().optional(),
         parentId: z.string().optional(),
       },
     },
-    async ({
-      base64Data,
-      fileName,
-      mimeType,
-      imageName,
-      folderId,
-      folderName,
-      parentId,
-    }) =>
-      handleTool(async () => {
-        const normalizedBase64 = stripDataUrlPrefix(base64Data);
-        const estimatedSize = estimateDecodedSizeInBytes(normalizedBase64);
+    uploadImageFromPath,
+  );
 
-        if (estimatedSize <= 0) {
-          throw new Error("Invalid or empty base64Data payload");
-        }
-
-        if (estimatedSize > maxImageBytes) {
-          throw new Error(
-            `Image payload is too large. Max allowed is ${maxImageBytes} bytes.`,
-          );
-        }
-
-        let fileBuffer: Buffer;
-
-        try {
-          fileBuffer = Buffer.from(normalizedBase64, "base64");
-        } catch {
-          throw new Error("Invalid base64Data payload");
-        }
-
-        if (!fileBuffer.length) {
-          throw new Error("Decoded file buffer is empty");
-        }
-
-        if (fileBuffer.length > maxImageBytes) {
-          throw new Error(
-            `Decoded image is too large. Max allowed is ${maxImageBytes} bytes.`,
-          );
-        }
-
-        const resolvedFolderId = await resolveFolderIdForUser({
-          userId,
-          folderId,
-          folderName,
-          parentId,
-        });
-
-        return uploadImageBufferService({
-          userId,
-          folderId: resolvedFolderId,
-          fileBuffer,
-          originalName: fileName.trim(),
-          mimeType,
-          imageName,
-        });
-      }),
+  server.registerTool(
+    "uploadImageFromPath",
+    {
+      description:
+        "Upload an image from a local file path into a target folder for the authenticated user",
+      inputSchema: {
+        filePath: z.string().min(1),
+        imageName: z.string().optional(),
+        folderId: z.string().optional(),
+        folderName: z.string().optional(),
+        parentId: z.string().optional(),
+      },
+    },
+    uploadImageFromPath,
   );
 
   server.registerTool(
